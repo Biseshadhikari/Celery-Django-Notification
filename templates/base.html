@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Navigation Bar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="bg-gray-800 p-4" >
+        <div class="flex items-center justify-between">
+            <div>
+                <a href="#" class="text-white font-semibold text-xl">Your Website</a>
+            </div>
+            <div class="relative mt-3">
+                <button  class="text-white relative" id="notificationButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                    </svg>
+                    <span class="absolute -top-4 -right-1 bg-red-500 rounded-full text-white px-2 py-1 text-xs" id="notificationCount">{{notification}}</span>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden" id="notificationDropdown">
+                    <div class="py-2" id ="dropdown" >
+                        <!-- Your notifications content goes here -->
+                        {%for notification in notifications%}
+                        <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">{{notification.title}}</a>
+                        {%endfor%}
+
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {%block content%}{%endblock content%}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationButton = document.getElementById('notificationButton');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+
+            notificationButton.addEventListener('click', function() {
+                notificationDropdown.classList.toggle('hidden');
+            });
+        });
+    </script>
+    <script>
+            var ws = new WebSocket(`ws://${window.location.host}/ws/connect/`);
+            const button = document.querySelector('#button')
+            
+            ws.onopen = function() { 
+                console.log('WebSocket connection established');
+                
+            };
+
+            ws.onmessage = function(event) { 
+                const data = JSON.parse(event.data)
+                // console.log(data)
+                document.querySelector('#dropdown').innerHTML += ` 
+                        <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-200">${data.message}</a>
+
+                `
+                document.querySelector('#notificationCount').innerHTML = data.count
+            };
+
+            ws.onclose = function(event) { 
+                console.log("WebSocket connection closed");
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket encountered an error:', error);
+            };
+            button.addEventListener('click',()=>{ 
+                ws.send(JSON.stringify({
+                    
+                    'message': "button clicked",
+                    
+                }));
+            })
+    </script>
+<script>
+    $(document).ready(function() {
+        $('#notificationButton').click(function() {
+            $.ajax({
+                url: '/managenotification/',
+                type: 'GET',
+                success: function(data) {
+                    console.log(data);
+                    // $('#notificationDropdown').text(data.message);
+                    document.querySelector('#notificationCount').innerHTML = data.notificationCount
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                    // Handle errors here
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+{%extends 'base.html'%}
+{%load check_sub%}
+
+
+{%block content%}
+<h1 class="font-bold text-center text-red-500 text-2xl mt-4">Creators</h1>
+{%for creator in creators%}
+
+<div id = "container {{creator.id}} " class="w-1/2 shadow-lg p-3 bg-gray-300 mx-auto mt-5 flex justify-between items-center" >
+    <div class="text-black font-bold">Creator : {{creator.name}}</div>
+    <div>
+        <form action="#{{creator.id}}" method = "post">
+            {%csrf_token%}
+            <input type="hidden" name="creator" value = "{{creator.id}}">
+            {%if creator.id|is_subscribed:request.user == True %}
+            <button class="p-3 bg-red-500 text-white rounded-xl shadow-md">
+                unsubscribe
+            </button>
+            {%else%}
+            <button class="p-3 bg-red-500 text-white rounded-xl shadow-md">
+                subscribe
+            </button>
+            {%endif%}
+        </form>
+        
+    </div>
+    
+</div>
+{%endfor%}
+
+{%endblock content%}
