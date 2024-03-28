@@ -7,13 +7,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Post
 from .forms import PostForm
 from django.http import JsonResponse
+from core.tasks import add
 
 
 # Create your views here.
 
 def index(request):
-
+    
     if request.method == "POST": 
+        add.delay(5,10)
         creator_id = request.POST.get("creator")
         creator = Creator.objects.filter(pk = creator_id ).first()
         if creator.subscribers.filter(pk=request.user.pk).exists(): 
@@ -21,11 +23,14 @@ def index(request):
         else: 
             creator.subscribers.add(request.user)
         return redirect('/index')
-    creators = Creator.objects.all()
-    return render(request, 'index.html',{'creators':creators})
+    else:
+        
+        creators = Creator.objects.all()
+        return render(request, 'index.html',{'creators':creators})
 
 
 def post_list(request):
+    
     posts = Post.objects.all()
     notifications = Notification.objects.filter(user = request.user,is_seen =False)
 

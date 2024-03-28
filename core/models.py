@@ -25,26 +25,3 @@ class Post(models.Model):
     title = models.CharField(max_length = 200 )
     desc = models.TextField()
 
-
-    def save(self, *args, **kwargs):
-        creator = Creator.objects.filter(user=self.creator.user).first()
-        print(creator)
-        if creator:  # Ensure creator exists
-            
-            channel_layer = get_channel_layer()
-            for subscriber in creator.subscribers.all():
-                notification = Notification(user = subscriber,title = f"{creator} has uploaded a post")
-                notification.save()
-                notificationCount = Notification.objects.filter(user = subscriber,is_seen = False).count()
-                print(f"{subscriber}-{notificationCount}")
-
-                async_to_sync(channel_layer.group_send)(
-                    subscriber.username,
-                    {
-                        'type': 'chat.message',
-                        'message': f"{creator} has uploaded a post",
-                        'count':notificationCount
-                    }
-                
-                )
-        super().save(*args, **kwargs)
